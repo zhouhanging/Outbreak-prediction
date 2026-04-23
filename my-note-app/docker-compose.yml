@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # AI 笔记助手应用
+  note-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-note-app
+    restart: unless-stopped
+    ports:
+      - "9222:9222"  # Electron 远程调试端口
+      - "5173:5173"  # Vite 开发服务器端口（仅开发模式）
+    volumes:
+      # 持久化数据卷
+      - note-app-data:/app/data
+      # 挂载笔记目录（可选，用于本地访问）
+      - ./data:/app/data:ro
+    environment:
+      - NODE_ENV=production
+      - ELECTRON_ENABLE_LOGGING=true
+    networks:
+      - note-app-network
+    # GPU 支持（如果有）
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # ChromaDB 向量数据库（可选，作为外部服务）
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma-data:/app/.chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+    networks:
+      - note-app-network
+
+volumes:
+  # 笔记数据持久化
+  note-app-data:
+    driver: local
+  # ChromaDB 数据持久化
+  chroma-data:
+    driver: local
+
+networks:
+  note-app-network:
+    driver: bridge

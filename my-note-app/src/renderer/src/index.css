@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #fafafa;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Tiptap 编辑器样式 */
+.tiptap {
+  outline: none;
+  min-height: 100%;
+}
+
+.tiptap p {
+  margin: 0.5em 0;
+}
+
+.tiptap h1, .tiptap h2, .tiptap h3 {
+  font-weight: 600;
+  margin: 1em 0 0.5em;
+}
+
+.tiptap h1 {
+  font-size: 1.5em;
+}
+
+.tiptap h2 {
+  font-size: 1.25em;
+}
+
+.tiptap h3 {
+  font-size: 1.1em;
+}
+
+.tiptap ul, .tiptap ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.tiptap blockquote {
+  border-left: 3px solid #e5e7eb;
+  padding-left: 1em;
+  margin: 1em 0;
+  color: #6b7280;
+}
+
+.tiptap code {
+  background: #f3f4f6;
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  font-family: 'SF Mono', Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.tiptap pre {
+  background: #1f2937;
+  color: #f9fafb;
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.tiptap pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.tiptap a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+/* 占位符样式 */
+.tiptap p.is-editor-empty:first-child::before {
+  color: #9ca3af;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* 动画效果 */
+.fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 选中文字高亮 */
+::selection {
+  background-color: #bfdbfe;
+}
