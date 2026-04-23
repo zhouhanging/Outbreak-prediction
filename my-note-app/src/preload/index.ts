@@ -43,6 +43,13 @@ export interface ReminderAPI {
   get: (noteId: string) => Promise<{ id: string; time: string } | null>
 }
 
+// OCR 相关 API
+export interface OCRAPI {
+  recognize: (imageBase64: string) => Promise<string>
+  recognizeHandwriting: (imageBase64: string) => Promise<string>
+  recognizeTable: (imageBase64: string) => Promise<string>
+}
+
 // 暴露 API 给渲染进程
 const api: {
   note: NoteAPI
@@ -51,6 +58,7 @@ const api: {
   blog: BlogAPI
   vector: VectorAPI
   reminder: ReminderAPI
+  ocr: OCRAPI
 } = {
   note: {
     list: () => ipcRenderer.invoke('note:list'),
@@ -82,6 +90,11 @@ const api: {
     add: (noteId: string, time: string) => ipcRenderer.invoke('reminder:add', noteId, time),
     remove: (noteId: string) => ipcRenderer.invoke('reminder:remove', noteId),
     get: (noteId: string) => ipcRenderer.invoke('reminder:get', noteId)
+  },
+  ocr: {
+    recognize: (imageBase64: string) => ipcRenderer.invoke('ocr:recognize', imageBase64),
+    recognizeHandwriting: (imageBase64: string) => ipcRenderer.invoke('ocr:recognizeHandwriting', imageBase64),
+    recognizeTable: (imageBase64: string) => ipcRenderer.invoke('ocr:recognizeTable', imageBase64)
   }
 }
 

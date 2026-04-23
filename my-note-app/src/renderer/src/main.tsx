@@ -14,6 +14,14 @@ declare global {
         delete: (id: string) => Promise<boolean>
         getNotesDir: () => Promise<string>
       }
+      tag: {
+        list: () => Promise<Array<{ id: string; name: string; color: string }>>
+        create: (name: string, color?: string) => Promise<boolean>
+        delete: (id: string) => Promise<boolean>
+        addToNote: (noteId: string, tagId: string) => Promise<void>
+        removeFromNote: (noteId: string, tagId: string) => Promise<void>
+        getNoteTags: (noteId: string) => Promise<string[]>
+      }
       ai: {
         generateCompletion: (text: string) => Promise<string>
       }
@@ -27,6 +35,12 @@ declare global {
       reminder: {
         add: (noteId: string, time: string) => Promise<boolean>
         remove: (noteId: string) => Promise<boolean>
+        get: (noteId: string) => Promise<{ id: string; time: string } | null>
+      }
+      ocr: {
+        recognize: (imageBase64: string) => Promise<string>
+        recognizeHandwriting: (imageBase64: string) => Promise<string>
+        recognizeTable: (imageBase64: string) => Promise<string>
       }
     }
   }

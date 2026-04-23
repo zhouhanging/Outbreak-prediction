@@ -17,6 +17,7 @@ import {
   removeTagFromNote,
   getNoteTags
 } from './database'
+import { recognizeText, recognizeHandwriting, recognizeTable } from './ai/ocr'
 
 // 配置日志
 log.transports.file.level = 'info'
@@ -214,6 +215,19 @@ function registerIpcHandlers(): void {
       log.error('Error getting note tags:', error)
       return []
     }
+  })
+
+  // OCR 相关
+  ipcMain.handle('ocr:recognize', async (_, imageBase64: string) => {
+    return await recognizeText(imageBase64)
+  })
+
+  ipcMain.handle('ocr:recognizeHandwriting', async (_, imageBase64: string) => {
+    return await recognizeHandwriting(imageBase64)
+  })
+
+  ipcMain.handle('ocr:recognizeTable', async (_, imageBase64: string) => {
+    return await recognizeTable(imageBase64)
   })
 
   log.info('All IPC handlers registered')
