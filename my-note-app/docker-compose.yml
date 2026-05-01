@@ -19,18 +19,36 @@ services:
     environment:
       - NODE_ENV=production
       - ELECTRON_ENABLE_LOGGING=true
+      # Ollama 连接配置
+      - OLLAMA_HOST=http://ollama:11434
     networks:
       - note-app-network
-    # GPU 支持（如果有）
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
+    depends_on:
+      - ollama
+      - chromadb
 
-  # ChromaDB 向量数据库（可选，作为外部服务）
+  # Ollama 本地 AI 服务
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      # 持久化模型数据
+      - ollama-data:/root/.ollama
+    # GPU 支持（如果有）
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - note-app-network
+
+  # ChromaDB 向量数据库
   chromadb:
     image: chromadb/chroma:latest
     container_name: chromadb
@@ -47,6 +65,9 @@ services:
 volumes:
   # 笔记数据持久化
   note-app-data:
+    driver: local
+  # Ollama 模型持久化
+  ollama-data:
     driver: local
   # ChromaDB 数据持久化
   chroma-data:

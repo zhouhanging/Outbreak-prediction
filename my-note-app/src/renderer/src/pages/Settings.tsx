@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Save, ExternalLink, FolderOpen, Key } from 'lucide-react'
+import { Save, ExternalLink, FolderOpen, Key, Server, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 
 function Settings(): JSX.Element {
   const [doubaoApiKey, setDoubaoApiKey] = useState('')
@@ -9,22 +9,34 @@ function Settings(): JSX.Element {
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
 
+  // Ollama 设置
+  const [ollamaHost, setOllamaHost] = useState('http://localhost:11434')
+  const [ollamaModel, setOllamaModel] = useState('llama3.2')
+  const [aiService, setAiService] = useState<'auto' | 'doubao' | 'ollama'>('auto')
+  const [healthStatus, setHealthStatus] = useState<{ doubao: boolean; ollama: boolean }>({ doubao: false, ollama: false })
+
   // 加载设置
   useEffect(() => {
-    // 从环境变量读取（这些在生产环境中应该存储在安全的地方）
     setDoubaoApiUrl(import.meta.env.VITE_DOUBAO_API_URL || 'https://ark.cn-beijing.volces.com/api/v3/chat/completions')
-    
-    // 获取笔记目录
     window.api.note.getNotesDir().then(setNotesDir).catch(console.error)
+    
+    // 加载保存的设置
+    const savedService = localStorage.getItem('settings_ai_service') as 'auto' | 'doubao' | 'ollama' | null
+    if (savedService) setAiService(savedService)
+    setOllamaHost(localStorage.getItem('settings_ollama_host') || 'http://localhost:11434')
+    setOllamaModel(localStorage.getItem('settings_ollama_model') || 'llama3.2')
+    setBlogRepoPath(localStorage.getItem('settings_blog_repo_path') || '')
   }, [])
 
   // 保存设置
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      // 保存到本地存储（实际项目中应该使用更安全的方式）
-      localStorage.setItem('settings_doubao_api_url', doubaoApiUrl)
+      localStorage.setItem('settings_ai_service', aiService)
+      localStorage.setItem('settings_ollama_host', ollamaHost)
+      localStorage.setItem('settings_ollama_model', ollamaModel)
       localStorage.setItem('settings_blog_repo_path', blogRepoPath)
+      localStorage.setItem('settings_doubao_api_url', doubaoApiUrl)
       
       setSaveMessage('设置已保存！')
       setTimeout(() => setSaveMessage(''), 3000)
@@ -51,17 +63,130 @@ function Settings(): JSX.Element {
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">设置</h1>
 
-        {/* AI 设置 */}
+        {/* AI 服务选择 */}
         <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Key className="w-5 h-5" />
-            AI 设置
+            <Server className="w-5 h-5" />
+            AI 服务选择
+          </h2>
+
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+              <input
+                type="radio"
+                name="ai-service"
+                value="auto"
+                checked={aiService === 'auto'}
+                onChange={(e) => setAiService(e.target.value as 'auto')}
+                className="w-4 h-4"
+              />
+              <div>
+                <p className="font-medium text-gray-800">自动选择（推荐）</p>
+                <p className="text-sm text-gray-500">优先使用本地 Ollama，失败时回退到豆包</p>
+              </div>
+            </label>
+
+            <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+              <input
+                type="radio"
+                name="ai-service"
+                value="ollama"
+                checked={aiService === 'ollama'}
+                onChange={(e) => setAiService(e.target.value as 'ollama')}
+                className="w-4 h-4"
+              />
+              <div>
+                <p className="font-medium text-gray-800">仅使用本地 Ollama</p>
+                <p className="text-sm text-gray-500">完全离线运行，需要安装 Ollama</p>
+              </div>
+            </label>
+
+            <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+              <input
+                type="radio"
+                name="ai-service"
+                value="doubao"
+                checked={aiService === 'doubao'}
+                onChange={(e) => setAiService(e.target.value as 'doubao')}
+                className="w-4 h-4"
+              />
+              <div>
+                <p className="font-medium text-gray-800">仅使用豆包 API</p>
+                <p className="text-sm text-gray-500">使用云端 AI，需要网络连接</p>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        {/* Ollama 设置 */}
+        <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <Server className="w-5 h-5 text-green-600" />
+            Ollama 本地设置
           </h2>
 
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                豆包 API 地址
+                Ollama 服务地址
+              </label>
+              <input
+                type="text"
+                value={ollamaHost}
+                onChange={(e) => setOllamaHost(e.target.value)}
+                placeholder="http://localhost:11434"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                本地 Ollama 服务的地址，默认端口 11434
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                模型名称
+              </label>
+              <input
+                type="text"
+                value={ollamaModel}
+                onChange={(e) => setOllamaModel(e.target.value)}
+                placeholder="llama3.2"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                推荐模型：llama3.2, qwen2.5, deepseek-r1
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-sm text-gray-600">
+                <strong>安装 Ollama：</strong>
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                1. 访问{' '}
+                <a href="https://ollama.com" target="_blank" rel="noopener" className="text-primary-600 hover:underline">
+                  ollama.com
+                </a>{' '}
+                下载安装
+              </p>
+              <p className="text-xs text-gray-500">
+                2. 安装后运行：<code className="bg-gray-200 px-1 rounded">ollama pull llama3.2</code>
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* 豆包 API 设置 */}
+        <section className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <Key className="w-5 h-5 text-blue-600" />
+            豆包 API 设置（备选）
+          </h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                API 地址
               </label>
               <input
                 type="text"
@@ -70,9 +195,6 @@ function Settings(): JSX.Element {
                 placeholder="https://ark.cn-beijing.volces.com/api/v3/chat/completions"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
               />
-              <p className="text-xs text-gray-400 mt-1">
-                豆包 API 的接口地址，需要申请 API Key
-              </p>
             </div>
 
             <div>
@@ -87,7 +209,7 @@ function Settings(): JSX.Element {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
               />
               <p className="text-xs text-gray-400 mt-1">
-                API Key 不会保存到本地，每次启动需要重新输入
+                从火山引擎申请：console.volcengine.com
               </p>
             </div>
           </div>
@@ -112,9 +234,6 @@ function Settings(): JSX.Element {
                 placeholder="C:\Users\YourName\blog"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
               />
-              <p className="text-xs text-gray-400 mt-1">
-                设置你的 Hexo 博客仓库路径，用于一键部署
-              </p>
             </div>
           </div>
         </section>
@@ -169,13 +288,13 @@ function Settings(): JSX.Element {
           <h2 className="text-lg font-semibold text-gray-800 mb-4">关于</h2>
           <div className="bg-gray-50 rounded-lg p-4">
             <p className="text-gray-600">
-              <strong>AI 笔记助手</strong> v1.0.0
+              <strong>AI 笔记助手</strong> v1.1.0
             </p>
             <p className="text-sm text-gray-400 mt-2">
-              一个本地优先的 AI 赋能笔记软件，支持语义搜索、智能整理、博客部署等功能。
+              一个本地优先的 AI 赋能笔记软件，支持 Ollama 本地模型、语义搜索、智能整理等功能。
             </p>
             <p className="text-xs text-gray-400 mt-4">
-              技术栈: Electron + React + TypeScript + Tiptap + ChromaDB
+              技术栈: Electron + React + TypeScript + Tiptap
             </p>
           </div>
         </section>
