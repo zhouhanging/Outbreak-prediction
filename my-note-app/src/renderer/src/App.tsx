@@ -4,6 +4,7 @@ import NoteEditor from './components/NoteEditor'
 import NoteList from './components/NoteList'
 import Settings from './pages/Settings'
 import SearchModal from './components/SearchModal'
+import BlogGenerator from './components/BlogGenerator'
 
 export interface Note {
   id: string
@@ -20,7 +21,7 @@ export interface NoteListItem {
   updatedAt: string
 }
 
-type View = 'notes' | 'settings'
+type View = 'notes' | 'settings' | 'blog'
 
 function App(): JSX.Element {
   const [notes, setNotes] = useState<NoteListItem[]>([])
@@ -165,6 +166,10 @@ function App(): JSX.Element {
       <main className="flex-1 flex flex-col bg-white rounded-lg shadow-sm overflow-hidden">
         {currentView === 'settings' ? (
           <Settings />
+        ) : currentView === 'blog' ? (
+          <div className="flex-1 overflow-y-auto">
+            <BlogGenerator />
+          </div>
         ) : currentNote ? (
           <NoteEditor
             note={currentNote}

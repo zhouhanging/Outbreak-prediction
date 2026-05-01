@@ -1,8 +1,8 @@
-import { Search, Settings, Book } from 'lucide-react'
+import { Search, Settings, Book, Feather } from 'lucide-react'
 
 interface SidebarProps {
-  currentView: 'notes' | 'settings'
-  onViewChange: (view: 'notes' | 'settings') => void
+  currentView: 'notes' | 'settings' | 'blog'
+  onViewChange: (view: 'notes' | 'settings' | 'blog') => void
   onSearch: () => void
 }
 
@@ -21,6 +21,17 @@ function Sidebar({ currentView, onViewChange, onSearch }: SidebarProps): JSX.Ele
         title="搜索笔记"
       >
         <Search className="w-5 h-5" />
+      </button>
+
+      {/* 博客生成按钮 */}
+      <button
+        onClick={() => onViewChange(currentView === 'blog' ? 'notes' : 'blog')}
+        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+          currentView === 'blog' ? 'bg-primary-500' : 'hover:bg-gray-800'
+        }`}
+        title="生成博客"
+      >
+        <Feather className="w-5 h-5" />
       </button>
 
       {/* 分隔线 */}
