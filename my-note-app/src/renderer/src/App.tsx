@@ -5,6 +5,7 @@ import NoteList from './components/NoteList'
 import Settings from './pages/Settings'
 import SearchModal from './components/SearchModal'
 import BlogGenerator from './components/BlogGenerator'
+import ShortcutsHelp from './components/ShortcutsHelp'
 
 export interface Note {
   id: string
@@ -29,6 +30,7 @@ function App(): JSX.Element {
   const [isLoading, setIsLoading] = useState(false)
   const [currentView, setCurrentView] = useState<View>('notes')
   const [showSearch, setShowSearch] = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
   // 加载笔记列表
@@ -117,6 +119,11 @@ function App(): JSX.Element {
   // 键盘快捷键
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // ?: 打开快捷键帮助
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        setShowShortcuts(prev => !prev)
+        return
+      }
       // Ctrl/Cmd + N: 新建笔记
       if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
         e.preventDefault()
@@ -134,9 +141,10 @@ function App(): JSX.Element {
         e.preventDefault()
         setShowSearch(true)
       }
-      // Escape: 关闭搜索
+      // Escape: 关闭弹窗
       if (e.key === 'Escape') {
         setShowSearch(false)
+        setShowShortcuts(false)
       }
     }
 
@@ -211,6 +219,9 @@ function App(): JSX.Element {
           }}
         />
       )}
+
+      {/* 快捷键帮助 */}
+      <ShortcutsHelp isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   )
 }

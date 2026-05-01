@@ -50,6 +50,12 @@ export interface OCRAPI {
   recognizeTable: (imageBase64: string) => Promise<string>
 }
 
+// 文件相关 API
+export interface FileAPI {
+  saveWithDialog: (content: string, filename: string) => Promise<string | null>
+  selectFolder: () => Promise<string | null>
+}
+
 // 暴露 API 给渲染进程
 const api: {
   note: NoteAPI
@@ -59,6 +65,7 @@ const api: {
   vector: VectorAPI
   reminder: ReminderAPI
   ocr: OCRAPI
+  file: FileAPI
 } = {
   note: {
     list: () => ipcRenderer.invoke('note:list'),
@@ -95,6 +102,10 @@ const api: {
     recognize: (imageBase64: string) => ipcRenderer.invoke('ocr:recognize', imageBase64),
     recognizeHandwriting: (imageBase64: string) => ipcRenderer.invoke('ocr:recognizeHandwriting', imageBase64),
     recognizeTable: (imageBase64: string) => ipcRenderer.invoke('ocr:recognizeTable', imageBase64)
+  },
+  file: {
+    saveWithDialog: (content: string, filename: string) => ipcRenderer.invoke('file:saveWithDialog', content, filename),
+    selectFolder: () => ipcRenderer.invoke('file:selectFolder')
   }
 }
 

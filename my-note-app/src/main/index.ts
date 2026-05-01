@@ -1,5 +1,6 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
+import { writeFile } from 'fs/promises'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import log from 'electron-log'
 import { initDatabase, getDatabase } from './database'
@@ -228,6 +229,47 @@ function registerIpcHandlers(): void {
 
   ipcMain.handle('ocr:recognizeTable', async (_, imageBase64: string) => {
     return await recognizeTable(imageBase64)
+  })
+
+  // 文件相关
+  ipcMain.handle('file:saveWithDialog', async (_, content: string, filename: string) => {
+    try {
+      const result = await dialog.showSaveDialog({
+        title: '导出笔记',
+        defaultPath: filename,
+        filters: [
+          { name: '所有文件', extensions: ['*'] }
+        ]
+      })
+
+      if (result.canceled || !result.filePath) {
+        return null
+      }
+
+      await writeFile(result.filePath, content, 'utf-8')
+      log.info('File saved:', result.filePath)
+      return result.filePath
+    } catch (error) {
+      log.error('Error saving file:', error)
+      return null
+    }
+  })
+
+  ipcMain.handle('file:selectFolder', async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        properties: ['openDirectory']
+      })
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return null
+      }
+
+      return result.filePaths[0]
+    } catch (error) {
+      log.error('Error selecting folder:', error)
+      return null
+    }
   })
 
   log.info('All IPC handlers registered')
